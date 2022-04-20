@@ -1,11 +1,12 @@
 import React, { Component } from 'react';
 import { View, StyleSheet, Text, TouchableOpacity, StatusBar, Image, Pressable } from 'react-native';
 import { FlatGrid } from 'react-native-super-grid';
-import { Client } from 'mqtt';
-
+import Door from './door';
 class Home extends Component{
     constructor(props){
       super(props)
+      navigate = props.navigation;
+      
       this.state = {
           devices:[
               {
@@ -16,19 +17,18 @@ class Home extends Component{
               },
               {
                 icon: require('../ICON/aircon.png'),
-                // link: useHref('./Screens/door')
+                
               },
               {
                 icon: require('../ICON/Curtain.png'),
-                // link: useHref('./Screens/door')
+                name: 'Curtain Screen'
               },
               {
                 icon: require('../ICON/Windows.png'),
-                // link: useHref('./Screens/door')
               },
               {
-                icon: require('../ICON/door.png'), 
-                // link: useHref('./Screens/door')
+                icon: require('../ICON/door.png'),
+                name: 'Door Screen' 
               },
           ],
           status:[
@@ -38,10 +38,10 @@ class Home extends Component{
               {
                 type: 'Light'
               }
-          ]
+          ],
+          
       };
     }
-    
 
     render(){
       return <View style = {styles.container}>
@@ -54,7 +54,7 @@ class Home extends Component{
                 itemDimension ={120}
                 data = {this.state.devices}
                 renderItem ={({item}) => (
-                    <TouchableOpacity style = {styles.tab}>
+                    <TouchableOpacity onPress={() => this.props.navigation.navigate(item.name)} style = {styles.tab}>
                         <Image style ={{width: 50, height: 50, alignSelf: 'center', top: '25%'}} source={item.icon}/>
                         <Text style = {styles.tabText}>{item.connect}</Text>
                     </TouchableOpacity>                
@@ -80,7 +80,11 @@ class Home extends Component{
     }
 }
 
-
+function jump({navigation}){
+  return(
+    navigate('Door Screen', {screen: 'Door'})   
+  )
+}
 
 export default Home;
 

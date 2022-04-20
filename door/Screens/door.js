@@ -1,9 +1,53 @@
-import React, { Component } from 'react';
+import React, { Component, useEffect, useState } from 'react';
 import {View, StyleSheet, Text, TouchableOpacity, StatusBar, Image, Pressable } from 'react-native';
 import { FlatGrid } from 'react-native-super-grid';
-import { ToggleSwitch } from 'toggle-switch-react-native'
+import {doc, collection, documentId, query, where, getDocs, updateDoc, getDoc } from "firebase/firestore";
+// import firestore from '@react-native-firebase/firestore';
+import db from "../firebase/config";
+import { clickProps } from 'react-native-web/dist/cjs/modules/forwardedProps';
+// import { useEffect } from 'react';
 
+import DoorPass from './doorPass';
 
+function changePassword({navigation})
+{
+  
+}
+
+function clickClosed()
+    {
+      getDoc(doc(db, "Devices", '1000')).then(docSnap => {
+        if (docSnap.exists()) {
+          if (docSnap.data().isActive == false)
+          {
+            updateDoc(doc(db, "Devices", '1000'), {
+              isActive: true,
+              Current_Status: "Closed"
+            })
+          }
+        } else {
+          console.log("No such document!");
+        }
+      })
+    }
+
+function clickOpen()
+    {
+      getDoc(doc(db, "Devices", '1000')).then(docSnap => {
+        if (docSnap.exists()) {
+          if (docSnap.data().isActive == true)
+          {
+            updateDoc(doc(db, "Devices", '1000'), {
+              isActive: false,
+              Current_Status: "Open"
+            })
+          }
+        } else {
+          console.log("No such document!");
+        }
+      })
+    }    
+  
 class Door extends Component{
     constructor(props){
       super(props)
@@ -17,15 +61,15 @@ class Door extends Component{
           password:[
             {
                 type: 'CHANGE PASSWORD',
+                name: 'DoorPass'
               },
-          ]
+          ],
+          // text: 'Lock',
+          // text1: 'Unlock'
       };
-      this.handleChange = this.handleChange.bind(this);
+      
     }
-
-    handleChange(checked) {
-      this.setState({ checked });
-    }    
+    
     
     render(){
       return <View style = {styles.container}>
@@ -34,49 +78,26 @@ class Door extends Component{
         <View style = {styles.User}>
             <Image style ={{width: 50, height: 50, top: '5%', left: '-2%'}} source={require('../ICON/arrow.png')}/>
             <Text style = {styles.text}>Menu</Text>
-            <View style = {styles.status}>
-                <View style = {styles.statusBar}>
-                    <Pressable onPress={() => this.changeText('Lock')} style={styles.IconBehave}>
-                        <Image style ={{width: 50, height: 50, left: '5%', bottom: '-46%'}} source={require('../ICON/lock.png')}/>
-                    </Pressable>
+            <TouchableOpacity onPress={() => clickClosed()} activeOpacity={0.5} style={styles.IconBehave}>
+                        <Image style ={{width: 50, height: 50, left: '30%', top: 4}} source={require('../ICON/lock.png')}/>
+                    </TouchableOpacity>
 
-                    <Pressable onPress={() => this.changeText('Unlock')} style={styles.IconBehave}>
-                        <Image style ={{width: 50, height: 50, right: '-65%', top: '-52%'}} source={require('../ICON/unlock.png')}/>
-                    </Pressable>
-                </View>
-            </View>
-            <FlatGrid
-                style ={{flex: 1}}
-                itemDimension ={300}
-                data = {this.state.devices}
-                renderItem ={({item}) => (
-                <TouchableOpacity style = {styles.tab}>
-                    
-                    <Text style = {styles.tabText1}>{item.type}</Text>
-                    <ToggleSwitch
-                        isOn={false}
-                        onColor="green"
-                        offColor="red"
-                        size="large"
-                        onToggle={isOn => console.log("changed to : ", isOn)}
-                        style = {{right: '-60%', top: -7}}
-
-                    />
-                </TouchableOpacity>
-                
-                )}
-            />
+                    <TouchableOpacity onPress={() => clickOpen()} >
+                        <Image style ={{width: 50, height: 50, right: '-60%', top: -60}} source={require('../ICON/unlock.png')}/>
+                    </TouchableOpacity>
             <FlatGrid
                 style ={{flex: 1}}
                 itemDimension ={300}
                 data = {this.state.password}
                 renderItem ={({item}) => (
-                <TouchableOpacity style = {styles.tab1}>
-                    
-                    <Text style = {styles.tabText}>{item.type}</Text>
-                    
-                </TouchableOpacity>
-                )}
+                  <TouchableOpacity onPress={() => this.props.navigation.navigate('DoorPass Screen')} style = {styles.tab1}>
+                      
+                      <Text style = {styles.tabText}>{item.type}</Text>
+                      
+                  </TouchableOpacity>
+                  )}
+                
+                
             />
         </View>
         <View style = {styles.navContainer}>
@@ -99,6 +120,9 @@ class Door extends Component{
 }
 
 export default Door;
+
+
+
 
 const styles = StyleSheet.create({
   container: {
@@ -167,6 +191,7 @@ const styles = StyleSheet.create({
     top: -400,
     justifyContent: 'space-evenly',
     borderRadius: 40, 
+    zIndex: -1
   },
 
   navContainer: {
@@ -185,7 +210,8 @@ const styles = StyleSheet.create({
   },
 
   IconBehave:{
-    padding: 14
+    padding: 14,
+    alignContent: 'center'
   }
   
 });
